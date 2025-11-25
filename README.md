@@ -70,10 +70,29 @@ simulador-memoria-windows.exe
 ./simulador-memoria-linux
 ```
 
+**Nota:** En Linux y macOS, asegúrate de que el ejecutable tenga permisos de ejecución.
+
+
+### Cargar archivo de procesos en los ejecutables
+
+Al ejecutar el programa, busca automáticamente un archivo `procesos.csv` en el directorio de trabajo actual. Si no lo encuentra, puedes ingresar la ruta del archivo manualmente.
+
+**Ejemplos de rutas según dónde ejecutes el programa:**
+
+- Puedes usar rutas absolutas:
+  ```
+  /ruta/completa/al/archivo/procesos.csv
+  ```
+
+- También puedes usar rutas relativas desde donde ejecutas:
+  ```
+  ./procesos.csv
+  ```
+
 ## Uso
 
 ```bash
-uv run python main.py
+uv run python src/main.py
 ```
 
 El programa mostrará un menú interactivo donde podrás:
@@ -101,7 +120,7 @@ P3,180,2,8
 | `tiempo_arribo` | Instante en que llega al sistema |
 | `tiempo_irrupcion` | Tiempo de CPU que necesita |
 
-Se incluye un archivo de ejemplo `procesos.csv` en el repositorio.
+Se incluye un archivo de ejemplo `procesos.csv` en la carpeta `src/tests/`.
 
 ## Salida del simulador
 
@@ -123,28 +142,30 @@ El proyecto está organizado en módulos separados por responsabilidad:
 
 ```
 so-kernel/
-├── entities/            # Clases de dominio/entidades
-│   ├── __init__.py
-│   ├── proceso.py       # Clase Proceso y estados
-│   └── particion.py     # Clase Partición de memoria
-├── core/                # Lógica de negocio
-│   ├── __init__.py
-│   ├── gestor_memoria.py    # Gestor de memoria (Best-Fit)
-│   ├── planificador.py      # Planificador de CPU (SRTF)
-│   └── simulador.py         # Lógica principal de simulación
-├── utils/               # Utilidades y helpers
-│   ├── __init__.py
-│   ├── lector_csv.py        # Lectura de archivos CSV
-│   └── formato_salida.py    # Formateo de salida con Rich
-├── main.py              # Punto de entrada y menú principal
-├── procesos.csv         # Archivo de ejemplo
+├── src/                 # Código fuente del proyecto
+│   ├── entities/        # Clases de dominio/entidades
+│   │   ├── __init__.py
+│   │   ├── proceso.py       # Clase Proceso y estados
+│   │   └── particion.py     # Clase Partición de memoria
+│   ├── core/            # Lógica de negocio
+│   │   ├── __init__.py
+│   │   ├── gestor_memoria.py    # Gestor de memoria (Best-Fit)
+│   │   ├── planificador.py      # Planificador de CPU (SRTF)
+│   │   └── simulador.py         # Lógica principal de simulación
+│   ├── utils/           # Utilidades y helpers
+│   │   ├── __init__.py
+│   │   ├── lector_csv.py        # Lectura de archivos CSV
+│   │   └── formato_salida.py    # Formateo de salida con Rich
+│   ├── main.py          # Punto de entrada y menú principal
+│   └── tests/           # Archivos de prueba
+│       └── procesos.csv  # Archivo de ejemplo
 ├── pyproject.toml       # Configuración del proyecto
-└── CONSIGNA.md          # Consigna original del trabajo
+└── README.md            # Este archivo
 ```
 
 ### Organización por módulos
 
-- **`entities/`**: Contiene las clases que representan las entidades del dominio del sistema (Proceso, Partición)
-- **`core/`**: Contiene la lógica de negocio principal (gestión de memoria, planificación, simulación)
-- **`utils/`**: Contiene utilidades y funciones auxiliares (lectura de archivos, formateo de salida)
+- **`src/entities/`**: Contiene las clases que representan las entidades del dominio del sistema (Proceso, Partición)
+- **`src/core/`**: Contiene la lógica de negocio principal (gestión de memoria, planificación, simulación)
+- **`src/utils/`**: Contiene utilidades y funciones auxiliares (lectura de archivos, formateo de salida)
 

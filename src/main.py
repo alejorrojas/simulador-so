@@ -66,6 +66,7 @@ class MenuPrincipal:
         if self.ruta_archivo:
             console.print(f"\n  Archivo actual: [dim]{self.ruta_archivo}[/dim]")
         
+        # Buscar procesos.csv en el directorio de trabajo actual
         archivo_defecto = "procesos.csv"
         existe_defecto = os.path.isfile(archivo_defecto)
         
