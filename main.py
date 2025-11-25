@@ -9,6 +9,7 @@ Este programa simula:
 """
 
 import os
+import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -232,9 +233,18 @@ def main():
         menu = MenuPrincipal()
         menu.ejecutar()
     except KeyboardInterrupt:
-        console.print("\n\n  [yellow]Programa interrumpido por el usuario.[/yellow]\n")
+        # Usar print simple para evitar errores si hay otra señal pendiente
+        try:
+            print("\n\n  Programa interrumpido por el usuario. ¡Hasta luego!\n")
+        except:
+            pass
+        sys.exit(0)
     except Exception as e:
-        console.print(f"\n  [red]Error inesperado:[/red] {e}")
+        try:
+            console.print(f"\n  [red]Error inesperado:[/red] {e}")
+        except:
+            print(f"\n  Error inesperado: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
