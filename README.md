@@ -1,124 +1,106 @@
 # Simulador de Asignación de Memoria y Planificación de Procesos
 
-El objetivo de esta práctica consiste en implementar un simulador que muestre los aspectos de la planificación a corto plazo y la gestión de memoria con particiones fijas en un esquema de un solo procesador, tratando el ciclo de vida completo de un proceso desde su ingreso al sistema hasta su finalización.
+Simulador interactivo que demuestra los conceptos de planificación de CPU y gestión de memoria con particiones fijas en un sistema de un solo procesador.
 
----
+## Características
 
-## Consigna
+- **Asignación de memoria**: Particiones fijas con algoritmo **Best-Fit**
+- **Planificación de CPU**: **SRTF** (Shortest Remaining Time First)
+- **Grado de multiprogramación**: 5 procesos simultáneos en memoria
+- **Máximo de procesos**: 10
 
-Implementar un simulador de asignación de memoria y planificación de procesos con los siguientes requerimientos:
+### Particiones de memoria
 
-- El simulador deberá permitir cargar procesos ingresados por el usuario.
-- Se permitirá un máximo de **10 procesos**.
-- La asignación de memoria será con **particiones fijas**.
-- Las particiones serán:
+| Partición | Tamaño | Uso |
+|-----------|--------|-----|
+| 0 | 100 KB | Sistema Operativo |
+| 1 | 250 KB | Trabajos grandes |
+| 2 | 150 KB | Trabajos medianos |
+| 3 | 50 KB | Trabajos pequeños |
 
-  - **100K** destinados al Sistema Operativo  
-  - **250K** para trabajos grandes  
-  - **150K** para trabajos medianos  
-  - **50K** para trabajos pequeños  
+### Estados de los procesos
 
-- Se permitirá el ingreso de nuevos procesos cuando sea posible, manteniendo un **grado de multiprogramación de 5**.
-- La política de asignación de memoria será **Best-Fit**.
-- Para cada proceso se leerá desde un archivo:
-  - Id de proceso  
-  - Tamaño del proceso  
-  - Tiempo de arribo  
-  - Tiempo de irrupción  
-- La planificación del CPU será mediante **SRTF**.
-- Estados manejados:
-  - Nuevo  
-  - Listo  
-  - Listo y suspendido  
-  - Ejecución  
-  - Terminado  
+- **Sin arribar**: Aún no llegó al sistema
+- **Nuevo**: Arribó pero no tiene memoria asignada
+- **Listo**: En memoria, esperando CPU
+- **Listo y suspendido**: Sin memoria, esperando asignación
+- **Ejecución**: Usando el CPU
+- **Terminado**: Finalizó su ejecución
 
-(No se usa el estado Bloqueado para simplificar.)
+## Instalación
 
----
+### Requisitos
 
-## Salida esperada del simulador
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/) (recomendado)
 
-- Estado del procesador (proceso en ejecución en ese instante).
-- Tabla de particiones de memoria, incluyendo:
-  - Id de partición  
-  - Dirección de comienzo  
-  - Tamaño  
-  - Id de proceso asignado  
-  - Fragmentación interna  
-- Estado de la cola de:
-  - Listos  
-  - Listos/suspendidos  
-- Al finalizar:
-  - Tiempo de retorno y tiempo de espera de cada proceso  
-  - Promedios de estos tiempos  
-  - Rendimiento del sistema (trabajos terminados por unidad de tiempo)
+### Con uv
 
----
+```bash
+uv sync
+```
 
-## Consideraciones
+## Uso
 
-- Las salidas deben presentarse cada vez que:
-  - Llega un nuevo proceso  
-  - Termina un proceso en ejecución  
-- IMPORTANTE: No se permiten corridas ininterrumpidas desde inicio hasta final sin mostrar estados. Las presentaciones de salida deberán realizarse cada vez que llega un nuevo proceso o se termina un proceso en  ejecución. No se permiten corridas ininterrumpidas de simulador, desde que se inicia la simulación hasta que termina el último proceso.
-- El programa deberá ser implementado en **Python**.
-- La interacción debe ser por terminal
-- En la imagen diagrama-flujo.png, existe un diagrama de flujo del funcionamiento de programa. La implementación en codigo debe aproximarse o tratar de imitar este flujo
+```bash
+uv run python main.py
+```
 
+El programa mostrará un menú interactivo donde podrás:
 
----
+1. Cargar un archivo CSV con procesos
+2. Ver los procesos cargados
+3. Iniciar la simulación
+4. Salir
 
-## Ejemplos de salidas esperadas 
+## Formato del archivo CSV
 
-Aclaración: Estos ejemplos no son de una implementación real, solo describen el formato de salida esperado.
---- 
+El archivo de procesos debe tener el siguiente formato:
 
------------------------- ESTADO INICIAL DE LA MEMORIA ------------------------
+```csv
+id_proceso,tamaño,tiempo_arribo,tiempo_irrupcion
+P1,200,0,5
+P2,50,1,3
+P3,180,2,8
+```
 
-ESTADOS DE LOS PROCESOS:
-- EJECUTANDOSE: No hay procesos ejecutandose
-- LISTOS:
-- LISTOS Y SUSPENDIDOS:
-- NUEVOS:
-- SIN ARRIBAR: P1, P2, P3, P4, P5, P6, P7, P8, P9, P10
-- TERMINADOS:
+| Campo | Descripción |
+|-------|-------------|
+| `id_proceso` | Identificador único (ej: P1, P2) |
+| `tamaño` | Tamaño del proceso en KB |
+| `tiempo_arribo` | Instante en que llega al sistema |
+| `tiempo_irrupcion` | Tiempo de CPU que necesita |
 
+Se incluye un archivo de ejemplo `procesos.csv` en el repositorio.
 
-┌───────────┬────────────────────┬───────────────────────┬──────────────┐
-│ PARTICIÓN │     CONTENIDO      │ TAMAÑO PARTICIÓN      │ FI/FE/EL     │
-├───────────┼────────────────────┼───────────────────────┼──────────────┤
-│     0     │ Sistema operativo  │       100 KB          │ FI: 0 KB     │
-│     1     │         -          │       250 KB          │ Espacio Libre│
-│     2     │         -          │       120 KB          │ Espacio Libre│
-│     3     │         -          │        60 KB          │ Espacio Libre│
-└───────────┴────────────────────┴───────────────────────┴──────────────┘
+## Salida del simulador
 
+Durante la simulación se muestra en cada evento:
 
-PRESIONE ENTER PARA CONTINUAR
+- Estado actual de todos los procesos
+- Tabla de particiones de memoria con fragmentación interna
+- Proceso en ejecución y colas de listos/suspendidos
 
----
+Al finalizar:
 
----------------- SE ASIGNARON P1, P2 Y P4 A MEMORIA ----------------
+- Tiempo de retorno y espera de cada proceso
+- Promedios de tiempos
+- Rendimiento del sistema
 
-INSTANTE: 2
-ESTADOS DE LOS PROCESOS:
-- EJECUTANDOSE: P2
-- LISTOS: P1, P4
-- LISTOS Y SUSPENDIDOS: P3, P7
-- NUEVOS:
-- SIN ARRIBAR: P5, P6, P8, P9, P10
-- TERMINADOS:
+## Estructura del proyecto
 
+```
+so-kernel/
+├── main.py              # Punto de entrada y menú principal
+├── simulador.py         # Lógica principal de simulación
+├── proceso.py           # Clase Proceso y estados
+├── particion.py         # Clase Partición de memoria
+├── gestor_memoria.py    # Gestor de memoria (Best-Fit)
+├── planificador.py      # Planificador de CPU (SRTF)
+├── lector_csv.py        # Lectura de archivos CSV
+├── formato_salida.py    # Formateo de salida con Rich
+├── procesos.csv         # Archivo de ejemplo
+├── pyproject.toml       # Configuración del proyecto
+└── CONSIGNA.md          # Consigna original del trabajo
+```
 
-┌───────────┬────────────────────┬───────────────────────┬──────────────┐
-│ PARTICIÓN │     CONTENIDO      │ TAMAÑO PARTICIÓN      │ FI/FE/EL     │
-├───────────┼────────────────────┼───────────────────────┼──────────────┤
-│     0     │ Sistema operativo  │       100 KB          │ FI: 0 KB     │
-│     1     │   P1(200 KB)       │       250 KB          │ FI: 50 KB    │
-│     2     │    P2(50 KB)       │       120 KB          │ FI: 70 KB    │
-│     3     │    P4(50 KB)       │        60 KB          │ FI: 10 KB    │
-└───────────┴────────────────────┴───────────────────────┴──────────────┘
-
-
-PRESIONE ENTER PARA CONTINUAR
