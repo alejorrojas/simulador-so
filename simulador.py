@@ -3,11 +3,16 @@ Módulo principal del simulador de memoria y planificación de procesos.
 """
 
 from typing import List, Optional, Tuple
+from rich.console import Console
 from proceso import Proceso, EstadoProceso
 from gestor_memoria import GestorMemoria
 from planificador import Planificador
 from formato_salida import FormateadorSalida
 from lector_csv import LectorCSV
+
+
+# Consola global
+console = Console()
 
 
 class Simulador:
@@ -376,8 +381,8 @@ class Simulador:
             self.formateador.esperar_entrada()
             self.simular()
         except FileNotFoundError as e:
-            print(f"\nError: {e}")
-            print("Por favor, verifique que el archivo existe.")
+            console.print(f"\n[red]Error:[/red] {e}")
+            console.print("[dim]Por favor, verifique que el archivo existe.[/dim]")
         except ValueError as e:
-            print(f"\nError en el archivo de entrada: {e}")
+            console.print(f"\n[red]Error en el archivo de entrada:[/red] {e}")
 

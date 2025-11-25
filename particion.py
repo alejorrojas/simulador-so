@@ -124,7 +124,7 @@ class Particion:
             return "FI: 0 KB"
         
         if self.proceso_asignado is None:
-            return "Espacio Libre"
+            return "Libre"
         
         fi = self.calcular_fragmentacion_interna()
         return f"FI: {fi} KB"
