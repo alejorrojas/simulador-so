@@ -3,24 +3,12 @@ Módulo que define el Planificador de CPU con algoritmo SRTF.
 """
 
 from typing import List, Optional
-from proceso import Proceso, EstadoProceso
+from entities.proceso import Proceso, EstadoProceso
 
 
 class Planificador:
-    """
-    Planificador de CPU que implementa el algoritmo SRTF (Shortest Remaining Time First).
-    
-    SRTF es una versión preemptiva de SJF (Shortest Job First), donde el proceso
-    con menor tiempo restante de ejecución tiene prioridad.
-    
-    Atributos:
-        cola_listos: Lista de procesos listos para ejecutar
-        cola_listos_suspendidos: Lista de procesos en estado listo pero suspendidos
-        proceso_ejecutando: Proceso actualmente en ejecución
-    """
     
     def __init__(self):
-        """Inicializa el planificador con colas vacías."""
         self.cola_listos: List[Proceso] = []
         self.cola_listos_suspendidos: List[Proceso] = []
         self.proceso_ejecutando: Optional[Proceso] = None

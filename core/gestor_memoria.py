@@ -3,18 +3,11 @@ Módulo que define el Gestor de Memoria con particiones fijas y algoritmo Best-F
 """
 
 from typing import List, Optional
-from particion import Particion
-from proceso import Proceso
+from entities.particion import Particion
+from entities.proceso import Proceso
 
 
 class GestorMemoria:
-    """
-    Gestor de memoria que maneja particiones fijas con algoritmo Best-Fit.
-    
-    Atributos:
-        particiones: Lista de particiones de memoria
-        grado_multiprogramacion: Número máximo de procesos en memoria (5)
-    """
     
     # Configuración de particiones fijas (en KB)
     TAMAÑO_SO = 100        # Partición del Sistema Operativo

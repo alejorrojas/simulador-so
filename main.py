@@ -1,45 +1,26 @@
-"""
-Punto de entrada principal del simulador de memoria y planificación de procesos.
-
-Este programa simula:
-- Asignación de memoria con particiones fijas usando Best-Fit
-- Planificación de CPU con algoritmo SRTF (Shortest Remaining Time First)
-- Grado de multiprogramación de 5 procesos
-- Máximo de 10 procesos
-"""
-
 import os
 import sys
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from rich import box
-from simulador import Simulador
-from lector_csv import LectorCSV
-from formato_salida import FormateadorSalida
+from core.simulador import Simulador
+from utils.lector_csv import LectorCSV
+from utils.formato_salida import FormateadorSalida
 
-
-# Consola global
 console = Console()
 
-
 class MenuPrincipal:
-    """
-    Menú interactivo para el simulador de memoria.
-    """
-    
+
     def __init__(self):
-        """Inicializa el menú con valores por defecto."""
         self.ruta_archivo = None
         self.procesos_cargados = None
         self.formateador = FormateadorSalida()
     
     def limpiar_pantalla(self):
-        """Limpia la pantalla de la terminal."""
         os.system('cls' if os.name == 'nt' else 'clear')
     
     def mostrar_encabezado(self):
-        """Muestra el encabezado del programa."""
         console.print()
         console.print(Panel(
             "[bold white]SIMULADOR DE ASIGNACIÓN DE MEMORIA\n"
@@ -59,11 +40,9 @@ class MenuPrincipal:
         console.print(Panel(config_text, border_style="dim"))
     
     def mostrar_menu(self):
-        """Muestra las opciones del menú principal."""
         console.print()
         console.rule("[bold cyan]MENÚ PRINCIPAL[/bold cyan]", style="cyan")
         
-        # Mostrar estado actual del archivo cargado
         if self.ruta_archivo:
             console.print(f"\n  [green]✓[/green] Archivo cargado: [bold]{self.ruta_archivo}[/bold]")
             if self.procesos_cargados:
@@ -77,25 +56,16 @@ class MenuPrincipal:
         console.print("  [bold]4.[/bold] Salir")
         console.rule(style="dim")
     
-    def obtener_opcion(self) -> str:
-        """
-        Obtiene la opción seleccionada por el usuario.
-        
-        Returns:
-            La opción ingresada por el usuario
-        """
+    def obtener_opcion_usuario(self) -> str:
         return console.input("\n[bold]Seleccione una opción (1-4):[/bold] ").strip()
     
     def cargar_archivo(self):
-        """Solicita y carga un archivo CSV de procesos."""
         console.print()
         console.rule("[bold cyan]CARGAR ARCHIVO DE PROCESOS[/bold cyan]", style="cyan")
         
-        # Mostrar ruta actual si existe
         if self.ruta_archivo:
             console.print(f"\n  Archivo actual: [dim]{self.ruta_archivo}[/dim]")
         
-        # Buscar procesos.csv en el directorio de trabajo actual
         archivo_defecto = "procesos.csv"
         existe_defecto = os.path.isfile(archivo_defecto)
         
@@ -105,7 +75,6 @@ class MenuPrincipal:
         
         ruta = console.input("\n  [bold]Ingrese la ruta del archivo CSV:[/bold] ").strip()
         
-        # Usar archivo por defecto si no se ingresa nada y existe
         if not ruta:
             if existe_defecto:
                 ruta = archivo_defecto
@@ -114,10 +83,8 @@ class MenuPrincipal:
                 console.input("\n  [dim]Presione Enter para continuar...[/dim]")
                 return
         
-        # Expandir ~ a directorio home si es necesario
         ruta = os.path.expanduser(ruta)
         
-        # Validar y cargar el archivo
         console.print(f"\n  Validando archivo: [cyan]{ruta}[/cyan]")
         es_valido, mensaje = LectorCSV.validar_archivo(ruta)
         
@@ -135,7 +102,6 @@ class MenuPrincipal:
         console.input("\n  [dim]Presione Enter para continuar...[/dim]")
     
     def ver_procesos(self):
-        """Muestra los procesos cargados."""
         console.print()
         console.rule("[bold cyan]PROCESOS CARGADOS[/bold cyan]", style="cyan")
         
@@ -171,14 +137,12 @@ class MenuPrincipal:
         console.input("\n  [dim]Presione Enter para continuar...[/dim]")
     
     def iniciar_simulacion(self):
-        """Inicia la simulación con los procesos cargados."""
         if not self.procesos_cargados:
             console.print("\n  [yellow]![/yellow] No hay procesos cargados.")
             console.print("    [dim]Use la opción 1 para cargar un archivo CSV primero.[/dim]")
             console.input("\n  [dim]Presione Enter para continuar...[/dim]")
             return
         
-        # Confirmar inicio de simulación
         console.print()
         console.rule("[bold cyan]INICIAR SIMULACIÓN[/bold cyan]", style="cyan")
         console.print(f"\n  Archivo: [bold]{self.ruta_archivo}[/bold]")
@@ -189,7 +153,6 @@ class MenuPrincipal:
         if confirmacion in ['s', 'si', 'sí', 'y', 'yes']:
             self.limpiar_pantalla()
             
-            # Crear y ejecutar el simulador
             simulador = Simulador()
             simulador.cargar_procesos(self.ruta_archivo)
             
@@ -197,7 +160,7 @@ class MenuPrincipal:
             self.formateador.mostrar_procesos_cargados(simulador.procesos)
             self.formateador.esperar_entrada()
             
-            simulador.simular()
+            simulador.simular() # Aqui comienza la simulacion 
             
             console.input("\n  [dim]Presione Enter para volver al menú principal...[/dim]")
         else:
@@ -205,13 +168,12 @@ class MenuPrincipal:
             console.input("\n  [dim]Presione Enter para continuar...[/dim]")
     
     def ejecutar(self):
-        """Ejecuta el bucle principal del menú."""
         while True:
             self.limpiar_pantalla()
             self.mostrar_encabezado()
             self.mostrar_menu()
             
-            opcion = self.obtener_opcion()
+            opcion = self.obtener_opcion_usuario()
             
             if opcion == '1':
                 self.cargar_archivo()
@@ -228,12 +190,10 @@ class MenuPrincipal:
 
 
 def main():
-    """Función principal que ejecuta el menú del simulador."""
     try:
         menu = MenuPrincipal()
         menu.ejecutar()
     except KeyboardInterrupt:
-        # Usar print simple para evitar errores si hay otra señal pendiente
         try:
             print("\n\n  Programa interrumpido por el usuario. ¡Hasta luego!\n")
         except:

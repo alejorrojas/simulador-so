@@ -119,18 +119,32 @@ Al finalizar:
 
 ## Estructura del proyecto
 
+El proyecto está organizado en módulos separados por responsabilidad:
+
 ```
 so-kernel/
+├── entities/            # Clases de dominio/entidades
+│   ├── __init__.py
+│   ├── proceso.py       # Clase Proceso y estados
+│   └── particion.py     # Clase Partición de memoria
+├── core/                # Lógica de negocio
+│   ├── __init__.py
+│   ├── gestor_memoria.py    # Gestor de memoria (Best-Fit)
+│   ├── planificador.py      # Planificador de CPU (SRTF)
+│   └── simulador.py         # Lógica principal de simulación
+├── utils/               # Utilidades y helpers
+│   ├── __init__.py
+│   ├── lector_csv.py        # Lectura de archivos CSV
+│   └── formato_salida.py    # Formateo de salida con Rich
 ├── main.py              # Punto de entrada y menú principal
-├── simulador.py         # Lógica principal de simulación
-├── proceso.py           # Clase Proceso y estados
-├── particion.py         # Clase Partición de memoria
-├── gestor_memoria.py    # Gestor de memoria (Best-Fit)
-├── planificador.py      # Planificador de CPU (SRTF)
-├── lector_csv.py        # Lectura de archivos CSV
-├── formato_salida.py    # Formateo de salida con Rich
 ├── procesos.csv         # Archivo de ejemplo
 ├── pyproject.toml       # Configuración del proyecto
 └── CONSIGNA.md          # Consigna original del trabajo
 ```
+
+### Organización por módulos
+
+- **`entities/`**: Contiene las clases que representan las entidades del dominio del sistema (Proceso, Partición)
+- **`core/`**: Contiene la lógica de negocio principal (gestión de memoria, planificación, simulación)
+- **`utils/`**: Contiene utilidades y funciones auxiliares (lectura de archivos, formateo de salida)
 

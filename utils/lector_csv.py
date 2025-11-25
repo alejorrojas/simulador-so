@@ -4,37 +4,15 @@ Módulo para leer procesos desde archivos CSV.
 
 import csv
 from typing import List
-from proceso import Proceso
-
+from entities.proceso import Proceso
 
 class LectorCSV:
-    """
-    Clase para leer procesos desde archivos CSV.
-    
-    Formato esperado del CSV:
-        id_proceso,tamaño,tiempo_arribo,tiempo_irrupcion
-        P1,200,0,5
-        P2,50,1,3
-        ...
-    """
     
     MAX_PROCESOS = 10
     
     @staticmethod
     def leer_procesos(ruta_archivo: str) -> List[Proceso]:
-        """
-        Lee procesos desde un archivo CSV.
         
-        Args:
-            ruta_archivo: Ruta al archivo CSV
-            
-        Returns:
-            Lista de procesos leídos del archivo
-            
-        Raises:
-            FileNotFoundError: Si el archivo no existe
-            ValueError: Si el formato del archivo es inválido o hay más de 10 procesos
-        """
         procesos = []
         
         try:
@@ -71,25 +49,12 @@ class LectorCSV:
         if not procesos:
             raise ValueError("El archivo CSV está vacío o no contiene procesos válidos")
         
-        # Ordenar procesos por tiempo de arribo
         procesos.sort(key=lambda p: p.tiempo_arribo)
         
         return procesos
     
     @staticmethod
     def _crear_proceso_desde_fila(fila: dict) -> Proceso:
-        """
-        Crea un proceso a partir de una fila del CSV.
-        
-        Args:
-            fila: Diccionario con los datos de la fila
-            
-        Returns:
-            Objeto Proceso creado
-            
-        Raises:
-            ValueError: Si los datos son inválidos
-        """
         id_proceso = fila['id_proceso'].strip()
         
         if not id_proceso:
@@ -104,7 +69,6 @@ class LectorCSV:
                 "tamaño, tiempo_arribo y tiempo_irrupcion deben ser números enteros"
             )
         
-        # Validaciones
         if tamaño <= 0:
             raise ValueError(f"El tamaño debe ser positivo (proceso {id_proceso})")
         
@@ -123,15 +87,6 @@ class LectorCSV:
     
     @staticmethod
     def validar_archivo(ruta_archivo: str) -> tuple[bool, str]:
-        """
-        Valida un archivo CSV sin cargar los procesos.
-        
-        Args:
-            ruta_archivo: Ruta al archivo CSV
-            
-        Returns:
-            Tupla (es_valido, mensaje) indicando si el archivo es válido
-        """
         try:
             procesos = LectorCSV.leer_procesos(ruta_archivo)
             return True, f"Archivo válido con {len(procesos)} procesos"

@@ -1,14 +1,14 @@
 """
-Módulo principal del simulador de memoria y planificación de procesos.
+Módulo principal del simulador de memoria y planificación de procesos. Coordina el gestor de memoria (Best-Fit) y el planificador de CPU (SRTF)
 """
 
 from typing import List, Optional, Tuple
 from rich.console import Console
-from proceso import Proceso, EstadoProceso
-from gestor_memoria import GestorMemoria
-from planificador import Planificador
-from formato_salida import FormateadorSalida
-from lector_csv import LectorCSV
+from entities.proceso import Proceso, EstadoProceso
+from core.gestor_memoria import GestorMemoria
+from core.planificador import Planificador
+from utils.formato_salida import FormateadorSalida
+from utils.lector_csv import LectorCSV
 
 
 # Consola global
@@ -16,23 +16,8 @@ console = Console()
 
 
 class Simulador:
-    """
-    Simulador de asignación de memoria y planificación de procesos.
-    
-    Coordina el gestor de memoria (Best-Fit) y el planificador de CPU (SRTF)
-    para simular el ciclo de vida completo de los procesos.
-    
-    Atributos:
-        procesos: Lista de todos los procesos del sistema
-        gestor_memoria: Gestor de memoria con particiones fijas
-        planificador: Planificador de CPU con SRTF
-        tiempo_actual: Tiempo actual de la simulación
-        formateador: Formateador para mostrar salidas
-        cola_nuevos: Cola de procesos que han arribado pero no tienen memoria
-    """
     
     def __init__(self):
-        """Inicializa el simulador con componentes vacíos."""
         self.procesos: List[Proceso] = []
         self.gestor_memoria = GestorMemoria()
         self.planificador = Planificador()
