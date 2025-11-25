@@ -101,7 +101,7 @@ class FormateadorSalida:
         table.add_column("PARTICIÓN", justify="center", style="cyan", width=12)
         table.add_column("CONTENIDO", justify="center", width=18)
         table.add_column("TAMAÑO", justify="center", style="yellow", width=15)
-        table.add_column("FI/FE/EL", justify="center", width=12)
+        table.add_column("FI/L", justify="center", width=12)
         
         for particion in particiones:
             contenido = particion.obtener_contenido()
@@ -116,9 +116,8 @@ class FormateadorSalida:
             fi_estado = particion.obtener_estado_fragmentacion()
             if "FI" in fi_estado:
                 estilo_fi = "red"
-            elif "FE" in fi_estado:
-                estilo_fi = "yellow"
             else:
+                # Partición libre
                 estilo_fi = "dim"
             
             table.add_row(
@@ -130,6 +129,66 @@ class FormateadorSalida:
         
         console.print(table)
         console.print()
+    
+    @staticmethod
+    def mostrar_fragmentacion_externa(particiones: List[Particion], procesos_esperando: List[Proceso]):
+        """
+        Muestra un indicador de fragmentación externa si existe.
+        
+        La fragmentación externa ocurre cuando:
+        - Hay procesos esperando memoria
+        - El proceso PODRÍA caber en alguna partición del sistema (si estuviera libre)
+        - La suma de particiones libres sería suficiente para el proceso
+        - Pero ninguna partición LIBRE individual es lo suficientemente grande
+        
+        NOTA: Si un proceso es más grande que TODAS las particiones del sistema,
+        eso NO es fragmentación externa - es que el proceso simplemente no cabe.
+        
+        Args:
+            particiones: Lista de todas las particiones
+            procesos_esperando: Lista de procesos esperando memoria (suspendidos + nuevos)
+        """
+        if not procesos_esperando:
+            return
+        
+        # Obtener particiones libres (excluyendo SO)
+        particiones_libres = [p for p in particiones if p.esta_libre()]
+        
+        if len(particiones_libres) < 2:
+            # Se necesitan al menos 2 particiones libres para que haya FE
+            return
+        
+        # Calcular memoria total libre
+        memoria_total_libre = sum(p.tamaño for p in particiones_libres)
+        
+        # Tamaño de la partición libre más grande
+        max_particion_libre = max(p.tamaño for p in particiones_libres)
+        
+        # Tamaño de la partición más grande del SISTEMA (excluye SO)
+        # Esto determina si el proceso PODRÍA caber en alguna partición existente
+        max_particion_sistema = max(p.tamaño for p in particiones if not p.es_sistema_operativo)
+        
+        # Buscar procesos que podrían caber si la memoria fuera contigua
+        procesos_con_fe = []
+        for proceso in procesos_esperando:
+            # Fragmentación externa solo si:
+            # 1. El proceso cabría en alguna partición del sistema (si estuviera libre)
+            # 2. El proceso cabría en la memoria total libre (si fuera contigua)
+            # 3. El proceso NO cabe en ninguna partición actualmente libre
+            if (proceso.tamaño <= max_particion_sistema and
+                proceso.tamaño <= memoria_total_libre and 
+                proceso.tamaño > max_particion_libre):
+                procesos_con_fe.append(proceso)
+        
+        if procesos_con_fe:
+            # Mostrar alerta de fragmentación externa
+            ids_procesos = ", ".join([f"{p.id_proceso}({p.tamaño}KB)" for p in procesos_con_fe])
+            tamaños_libres = " + ".join([f"{p.tamaño}KB" for p in particiones_libres])
+            
+            console.print(f"[bold yellow]FRAGMENTACIÓN EXTERNA:[/bold yellow]")
+            console.print(f"Memoria libre: {tamaños_libres} = [cyan]{memoria_total_libre}KB[/cyan] total")
+            console.print(f"Proceso(s) esperando que cabrían si fuera contigua: [bold]{ids_procesos}[/bold]")
+            console.print()
     
     @staticmethod
     def mostrar_instante(tiempo: int):
@@ -180,6 +239,7 @@ class FormateadorSalida:
         )
         
         table.add_column("Proceso", justify="center", style="white")
+        table.add_column("T. Finalización", justify="right", style="cyan")
         table.add_column("T. Retorno", justify="right", style="green")
         table.add_column("T. Espera", justify="right", style="yellow")
         
@@ -187,6 +247,7 @@ class FormateadorSalida:
         suma_espera = 0
         
         for proceso in procesos_terminados:
+            tiempo_finalizacion = proceso.tiempo_finalizacion
             tiempo_retorno = proceso.calcular_tiempo_retorno()
             tiempo_espera = proceso.calcular_tiempo_espera()
             
@@ -197,6 +258,7 @@ class FormateadorSalida:
             
             table.add_row(
                 proceso.id_proceso,
+                str(tiempo_finalizacion) if tiempo_finalizacion is not None else "-",
                 str(tiempo_retorno) if tiempo_retorno is not None else "-",
                 str(tiempo_espera) if tiempo_espera is not None else "-"
             )
@@ -259,3 +321,84 @@ class FormateadorSalida:
         
         console.print(table)
         console.print(f"\n[dim]Total: {len(procesos)} procesos[/dim]\n")
+    
+    @staticmethod
+    def formatear_lista_procesos(procesos: List[Proceso]) -> str:
+        """
+        Formatea una lista de procesos como string con comas.
+        
+        Args:
+            procesos: Lista de procesos
+            
+        Returns:
+            String con IDs de procesos separados por comas
+        """
+        return ", ".join([p.id_proceso for p in procesos])
+    
+    @staticmethod
+    def mensaje_asignacion(procesos: List[Proceso]) -> str:
+        """
+        Genera mensaje de asignación en singular o plural según cantidad.
+        
+        Args:
+            procesos: Lista de procesos asignados
+            
+        Returns:
+            Mensaje formateado
+        """
+        ids = FormateadorSalida.formatear_lista_procesos(procesos)
+        if len(procesos) == 1:
+            return f"SE ASIGNÓ {ids} A MEMORIA"
+        else:
+            return f"SE ASIGNARON {ids} A MEMORIA"
+    
+    @staticmethod
+    def mensaje_arribo(procesos: List[Proceso]) -> str:
+        """
+        Genera mensaje de arribo en singular o plural según cantidad.
+        
+        Args:
+            procesos: Lista de procesos que arribaron
+            
+        Returns:
+            Mensaje formateado
+        """
+        ids = FormateadorSalida.formatear_lista_procesos(procesos)
+        if len(procesos) == 1:
+            return f"ARRIBÓ {ids}"
+        else:
+            return f"ARRIBARON {ids}"
+    
+    @staticmethod
+    def mensaje_suspendido(procesos: List[Proceso]) -> str:
+        """
+        Genera mensaje de suspendido en singular o plural según cantidad.
+        
+        Args:
+            procesos: Lista de procesos suspendidos
+            
+        Returns:
+            Mensaje formateado
+        """
+        ids = FormateadorSalida.formatear_lista_procesos(procesos)
+        if len(procesos) == 1:
+            return f"SUSPENDIDO: {ids}"
+        else:
+            return f"SUSPENDIDOS: {ids}"
+    
+    @staticmethod
+    def mensaje_promocion(procesos: List[Proceso]) -> str:
+        """
+        Genera mensaje de promoción en singular o plural según cantidad.
+        
+        Args:
+            procesos: Lista de procesos promovidos
+            
+        Returns:
+            Mensaje formateado
+        """
+        ids = FormateadorSalida.formatear_lista_procesos(procesos)
+        if len(procesos) == 1:
+            return f"SE PROMOVIÓ: {ids}"
+        else:
+            return f"SE PROMOVIERON: {ids}"

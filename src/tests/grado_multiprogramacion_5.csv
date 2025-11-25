@@ -1,0 +1,9 @@
+id_proceso,tamaño,tiempo_arribo,tiempo_irrupcion
+P1,200,0,5
+P2,50,0,3
+P3,100,0,4
+P4,140,0,6
+P5,40,0,2
+P6,180,1,8
+P7,45,1,5
+P8,120,2,7

@@ -100,6 +100,17 @@ class Simulador:
         self.formateador.mostrar_tabla_particiones(
             self.gestor_memoria.obtener_particiones()
         )
+        
+        # Mostrar fragmentación externa si existe
+        # Procesos esperando memoria = suspendidos + nuevos
+        procesos_esperando = (
+            self.planificador.obtener_cola_suspendidos() + 
+            self._obtener_procesos_nuevos()
+        )
+        self.formateador.mostrar_fragmentacion_externa(
+            self.gestor_memoria.obtener_particiones(),
+            procesos_esperando
+        )
     
     def _procesar_arribos(self) -> List[Proceso]:
         """
@@ -121,19 +132,34 @@ class Simulador:
         
         return procesos_arribados
     
-    def _intentar_asignar_memoria_desde_colas(self) -> Tuple[List[Proceso], List[Proceso]]:
+    def _intentar_asignar_memoria_desde_colas(self) -> Tuple[List[Proceso], List[Proceso], List[Proceso]]:
         """
-        Intenta asignar memoria a procesos desde cola de nuevos y suspendidos.
-        Según el flowchart, se toman procesos de NUEVOS o LISTOS/SUSPENDIDOS
-        según prioridad mientras el grado de multiprogramación < 5.
+        Intenta asignar memoria a procesos desde cola de nuevos.
+        Según el flowchart, se toman procesos de NUEVOS mientras el 
+        grado de multiprogramación < 5.
+        
+        NOTA: SRTF no se aplica a procesos que aún no están en memoria.
+        Los procesos nuevos se ordenan por:
+          1. Tiempo de arribo (FIFO para procesos que llegan en momentos diferentes)
+          2. Tiempo de irrupción (para procesos que llegan al mismo tiempo)
+        
+        Esto permite que si varios procesos arriban simultáneamente (ej: t=0),
+        se priorice el de menor tiempo de irrupción, pero una vez establecido
+        el orden de arribo, se respeta FIFO.
         
         Returns:
-            Tupla (procesos_asignados, procesos_suspendidos)
+            Tupla (procesos_asignados, procesos_suspendidos, procesos_en_cola_por_grado)
         """
         asignados = []
         suspendidos_nuevos = []
+        procesos_en_cola_por_grado = []
         
-        # Procesar cola de nuevos primero (tienen prioridad según arribo)
+        # Ordenar cola_nuevos por (tiempo_arribo, tiempo_irrupcion)
+        # - Procesos con menor tiempo_arribo van primero (FIFO por arribo)
+        # - Para procesos con MISMO tiempo_arribo, menor tiempo_irrupcion primero
+        self.cola_nuevos.sort(key=lambda p: (p.tiempo_arribo, p.tiempo_irrupcion))
+        
+        # Procesar cola de nuevos
         while self.cola_nuevos:
             proceso = self.cola_nuevos[0]
             
@@ -141,6 +167,7 @@ class Simulador:
             if self._calcular_grado_multiprogramacion_actual() >= self.gestor_memoria.grado_multiprogramacion:
                 # No hay espacio por grado de multiprogramación
                 # Dejar los procesos restantes en cola de nuevos (no mover a suspendidos)
+                procesos_en_cola_por_grado = self.cola_nuevos.copy()
                 break
             
             # Intentar asignar memoria (Best-Fit)
@@ -155,7 +182,7 @@ class Simulador:
                 self.planificador.agregar_suspendido(proceso, self.tiempo_actual)
                 suspendidos_nuevos.append(proceso)
         
-        return asignados, suspendidos_nuevos
+        return asignados, suspendidos_nuevos, procesos_en_cola_por_grado
     
     def _promover_suspendidos(self) -> List[Proceso]:
         """
@@ -259,22 +286,34 @@ class Simulador:
         
         if hay_arribos_iniciales:
             procesos_arribados = self._procesar_arribos()
-            asignados, suspendidos = self._intentar_asignar_memoria_desde_colas()
+            asignados, suspendidos, en_cola_por_grado = self._intentar_asignar_memoria_desde_colas()
+            
+            # Filtrar en_cola_por_grado para incluir solo procesos que arribaron en este instante
+            en_cola_por_grado_este_instante = [
+                p for p in en_cola_por_grado 
+                if p in procesos_arribados
+            ]
+            
             self.planificador.seleccionar_siguiente(self.tiempo_actual)
             
             if asignados:
-                ids_asignados = ", ".join([p.id_proceso for p in asignados])
+                mensaje_asignacion = self.formateador.mensaje_asignacion(asignados)
                 if suspendidos:
-                    ids_suspendidos = ", ".join([p.id_proceso for p in suspendidos])
-                    mensaje = f"SE ASIGNARON {ids_asignados} A MEMORIA - SUSPENDIDOS: {ids_suspendidos}"
+                    mensaje_suspendido = self.formateador.mensaje_suspendido(suspendidos)
+                    mensaje = f"{mensaje_asignacion} - {mensaje_suspendido}"
+                elif en_cola_por_grado_este_instante:
+                    mensaje_arribo = self.formateador.mensaje_arribo(en_cola_por_grado_este_instante)
+                    mensaje = f"{mensaje_asignacion} - {mensaje_arribo} (GRADO DE MULTIPROGRAMACIÓN MÁXIMO ALCANZADO)"
                 else:
-                    mensaje = f"SE ASIGNARON {ids_asignados} A MEMORIA"
+                    mensaje = mensaje_asignacion
             elif suspendidos:
-                ids_suspendidos = ", ".join([p.id_proceso for p in suspendidos])
-                mensaje = f"ARRIBARON {ids_suspendidos} (SIN MEMORIA DISPONIBLE)"
+                mensaje_arribo = self.formateador.mensaje_arribo(suspendidos)
+                mensaje = f"{mensaje_arribo} (SIN MEMORIA DISPONIBLE)"
+            elif en_cola_por_grado_este_instante:
+                mensaje_arribo = self.formateador.mensaje_arribo(en_cola_por_grado_este_instante)
+                mensaje = f"{mensaje_arribo} (GRADO DE MULTIPROGRAMACIÓN MÁXIMO ALCANZADO)"
             else:
-                ids_arribados = ", ".join([p.id_proceso for p in procesos_arribados])
-                mensaje = f"ARRIBARON {ids_arribados}"
+                mensaje = self.formateador.mensaje_arribo(procesos_arribados)
             
             self.mostrar_estado(mensaje)
             self.formateador.esperar_entrada()
@@ -310,8 +349,12 @@ class Simulador:
                 proceso_terminado = self.planificador.finalizar_proceso_actual(self.tiempo_actual)
                 self.gestor_memoria.liberar_particion(proceso_terminado)
                 
-                # Intentar promover suspendidos
+                # Intentar promover suspendidos primero (tienen prioridad)
                 promovidos = self._promover_suspendidos()
+                
+                # Después de promover suspendidos, si todavía hay espacio,
+                # intentar asignar memoria a procesos nuevos
+                asignados_nuevos, suspendidos_nuevos, _ = self._intentar_asignar_memoria_desde_colas()
                 
                 # Seleccionar siguiente proceso
                 self.planificador.seleccionar_siguiente(self.tiempo_actual)
@@ -319,8 +362,14 @@ class Simulador:
                 # Construir mensaje del evento
                 mensaje = f"TERMINÓ {proceso_terminado.id_proceso}"
                 if promovidos:
-                    ids_promovidos = ", ".join([p.id_proceso for p in promovidos])
-                    mensaje += f" - SE PROMOVIERON: {ids_promovidos}"
+                    mensaje_promocion = self.formateador.mensaje_promocion(promovidos)
+                    mensaje += f" - {mensaje_promocion}"
+                if asignados_nuevos:
+                    mensaje_asignacion = self.formateador.mensaje_asignacion(asignados_nuevos)
+                    if promovidos:
+                        mensaje += f" - {mensaje_asignacion}"
+                    else:
+                        mensaje = f"{mensaje} - {mensaje_asignacion}"
                 
                 self.mostrar_estado(mensaje)
                 self.formateador.esperar_entrada()
@@ -330,25 +379,36 @@ class Simulador:
                 procesos_arribados = self._procesar_arribos()
                 
                 # Intentar asignar memoria a los nuevos procesos
-                asignados, suspendidos = self._intentar_asignar_memoria_desde_colas()
+                asignados, suspendidos, en_cola_por_grado = self._intentar_asignar_memoria_desde_colas()
+                
+                # Filtrar en_cola_por_grado para incluir solo procesos que arribaron en este instante
+                en_cola_por_grado_este_instante = [
+                    p for p in en_cola_por_grado 
+                    if p in procesos_arribados
+                ]
                 
                 # Verificar preemption con SRTF
                 self.planificador.seleccionar_siguiente(self.tiempo_actual)
                 
                 # Construir mensaje del evento
                 if asignados:
-                    ids_asignados = ", ".join([p.id_proceso for p in asignados])
+                    mensaje_asignacion = self.formateador.mensaje_asignacion(asignados)
                     if suspendidos:
-                        ids_suspendidos = ", ".join([p.id_proceso for p in suspendidos])
-                        mensaje = f"SE ASIGNARON {ids_asignados} A MEMORIA - SUSPENDIDOS: {ids_suspendidos}"
+                        mensaje_suspendido = self.formateador.mensaje_suspendido(suspendidos)
+                        mensaje = f"{mensaje_asignacion} - {mensaje_suspendido}"
+                    elif en_cola_por_grado_este_instante:
+                        mensaje_arribo = self.formateador.mensaje_arribo(en_cola_por_grado_este_instante)
+                        mensaje = f"{mensaje_asignacion} - {mensaje_arribo} (GRADO DE MULTIPROGRAMACIÓN MÁXIMO ALCANZADO)"
                     else:
-                        mensaje = f"SE ASIGNARON {ids_asignados} A MEMORIA"
+                        mensaje = mensaje_asignacion
                 elif suspendidos:
-                    ids_suspendidos = ", ".join([p.id_proceso for p in suspendidos])
-                    mensaje = f"ARRIBARON {ids_suspendidos} (SIN MEMORIA DISPONIBLE)"
+                    mensaje_arribo = self.formateador.mensaje_arribo(suspendidos)
+                    mensaje = f"{mensaje_arribo} (SIN MEMORIA DISPONIBLE)"
+                elif en_cola_por_grado_este_instante:
+                    mensaje_arribo = self.formateador.mensaje_arribo(en_cola_por_grado_este_instante)
+                    mensaje = f"{mensaje_arribo} (GRADO DE MULTIPROGRAMACIÓN MÁXIMO ALCANZADO)"
                 else:
-                    ids_arribados = ", ".join([p.id_proceso for p in procesos_arribados])
-                    mensaje = f"ARRIBARON {ids_arribados}"
+                    mensaje = self.formateador.mensaje_arribo(procesos_arribados)
                 
                 self.mostrar_estado(mensaje)
                 self.formateador.esperar_entrada()
