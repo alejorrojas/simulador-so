@@ -27,22 +27,9 @@ Simulador interactivo que demuestra los conceptos de planificación de CPU y ges
 - **Ejecución**: Usando el CPU
 - **Terminado**: Finalizó su ejecución
 
-## Instalación
+## Ejecutables
 
-### Requisitos
-
-- Python 3.13+
-- [uv](https://docs.astral.sh/uv/) (recomendado)
-
-### Con uv
-
-```bash
-uv sync
-```
-
-## Ejecutables precompilados
-
-Si no quieres instalar Python, puedes usar los ejecutables precompilados disponibles en la carpeta [`dist/`](dist/).
+Puedes usar los ejecutables precompilados disponibles en la carpeta [`dist/`](dist/).
 
 ### Ejecutables disponibles
 
@@ -89,6 +76,19 @@ Al ejecutar el programa, busca automáticamente un archivo `procesos.csv` en el 
   ./procesos.csv
   ```
 
+## Instalación
+
+### Requisitos
+
+- Python 3.13+
+- [uv](https://docs.astral.sh/uv/) (recomendado)
+
+### Con uv
+
+```bash
+uv sync
+```
+
 ## Uso
 
 ```bash
@@ -120,7 +120,7 @@ P3,180,2,8
 | `tiempo_arribo` | Instante en que llega al sistema |
 | `tiempo_irrupcion` | Tiempo de CPU que necesita |
 
-Se incluye un archivo de ejemplo `procesos.csv` en la carpeta `src/tests/`.
+Se incluye un archivo de ejemplo `procesos.csv` en la carpeta `./src/tests`.
 
 ## Salida del simulador
 
