@@ -136,13 +136,13 @@ class FormateadorSalida:
         Muestra un indicador de fragmentación externa si existe.
         
         La fragmentación externa ocurre cuando:
-        - Hay procesos esperando memoria
-        - El proceso PODRÍA caber en alguna partición del sistema (si estuviera libre)
-        - La suma de particiones libres sería suficiente para el proceso
-        - Pero ninguna partición LIBRE individual es lo suficientemente grande
+        - El proceso NO cabe en NINGUNA partición individual del sistema
+        - Pero la suma del espacio libre total SÍ alcanzaría
         
-        NOTA: Si un proceso es más grande que TODAS las particiones del sistema,
-        eso NO es fragmentación externa - es que el proceso simplemente no cabe.
+        NO es fragmentación externa si:
+        - El proceso cabe en alguna partición (aunque esté ocupada) → solo espera
+        - El proceso es más grande que todas las particiones Y más grande que 
+          la suma de espacio libre → limitación estructural
         
         Args:
             particiones: Lista de todas las particiones
@@ -161,23 +161,17 @@ class FormateadorSalida:
         # Calcular memoria total libre
         memoria_total_libre = sum(p.tamaño for p in particiones_libres)
         
-        # Tamaño de la partición libre más grande
-        max_particion_libre = max(p.tamaño for p in particiones_libres)
+        # Tamaño de la partición más grande LIBRE (excluye SO)
+        max_particion_sistema = max(p.tamaño for p in particiones_libres)
         
-        # Tamaño de la partición más grande del SISTEMA (excluye SO)
-        # Esto determina si el proceso PODRÍA caber en alguna partición existente
-        max_particion_sistema = max(p.tamaño for p in particiones if not p.es_sistema_operativo)
-        
-        # Buscar procesos que podrían caber si la memoria fuera contigua
+        # Buscar procesos con fragmentación externa
         procesos_con_fe = []
         for proceso in procesos_esperando:
             # Fragmentación externa solo si:
-            # 1. El proceso cabría en alguna partición del sistema (si estuviera libre)
-            # 2. El proceso cabría en la memoria total libre (si fuera contigua)
-            # 3. El proceso NO cabe en ninguna partición actualmente libre
-            if (proceso.tamaño <= max_particion_sistema and
-                proceso.tamaño <= memoria_total_libre and 
-                proceso.tamaño > max_particion_libre):
+            # 1. El proceso NO cabe en ninguna partición individual (> max del sistema)
+            # 2. Pero la suma de espacio libre SÍ alcanzaría (<= memoria total libre)
+            if (proceso.tamaño > max_particion_sistema and
+                proceso.tamaño <= memoria_total_libre):
                 procesos_con_fe.append(proceso)
         
         if procesos_con_fe:
