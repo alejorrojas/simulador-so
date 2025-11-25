@@ -40,6 +40,36 @@ Simulador interactivo que demuestra los conceptos de planificación de CPU y ges
 uv sync
 ```
 
+## Ejecutables precompilados
+
+Si no quieres instalar Python, puedes usar los ejecutables precompilados disponibles en la carpeta [`dist/`](dist/).
+
+### Ejecutables disponibles
+
+| Plataforma | Archivo |
+|------------|---------|
+| Linux (x64) | [`simulador-memoria-linux-x86_64`](dist/simulador-memoria-linux-x86_64) |
+| Linux (ARM64) | [`simulador-memoria-linux-arm64`](dist/simulador-memoria-linux-arm64) |
+| Windows | [`simulador-memoria-windows.exe`](dist/simulador-memoria-windows.exe) |
+| macOS (Apple Silicon) | [`simulador-memoria-macos-arm`](dist/simulador-memoria-macos-arm) |
+
+### Cómo ejecutar
+
+**Windows:**
+```bash
+simulador-memoria-windows.exe
+```
+
+**macOS:**
+```bash
+./simulador-memoria-macos-arm
+```
+
+**Linux:**
+```bash
+./simulador-memoria-linux
+```
+
 ## Uso
 
 ```bash
