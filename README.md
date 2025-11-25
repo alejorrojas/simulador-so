@@ -69,8 +69,9 @@ Implementar un simulador de asignación de memoria y planificación de procesos 
 
 ---
 
-## Ejemplos de salidas esperadas
+## Ejemplos de salidas esperadas 
 
+Aclaración: Estos ejemplos no son de una implementación real, solo describen el formato de salida esperado.
 --- 
 
 ------------------------ ESTADO INICIAL DE LA MEMORIA ------------------------
