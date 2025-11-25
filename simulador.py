@@ -92,6 +92,11 @@ class Simulador:
         if self._simulacion_iniciada:
             self.formateador.mostrar_instante(self.tiempo_actual)
         
+        # Mostrar grado de multiprogramación actual
+        grado_actual = self.gestor_memoria.contar_procesos_en_memoria()
+        grado_maximo = self.gestor_memoria.grado_multiprogramacion
+        self.formateador.mostrar_grado_multiprogramacion(grado_actual, grado_maximo)
+        
         self.formateador.mostrar_estados_procesos(
             proceso_ejecutando=self.planificador.obtener_proceso_ejecutando(),
             cola_listos=self.planificador.obtener_cola_listos(),

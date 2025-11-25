@@ -175,6 +175,30 @@ class FormateadorSalida:
         console.print(f"[bold blue]INSTANTE:[/bold blue] [bold white]{tiempo}[/bold white]\n")
     
     @staticmethod
+    def mostrar_grado_multiprogramacion(actual: int, maximo: int):
+        """
+        Muestra el grado de multiprogramación actual.
+        
+        Args:
+            actual: Número actual de procesos en memoria
+            maximo: Número máximo permitido de procesos en memoria
+        """
+        # Determinar color según el nivel de uso
+        if actual == 0:
+            color = "dim"
+        elif actual < maximo:
+            color = "green"
+        else:
+            color = "yellow"
+        
+        # Crear barra visual de uso
+        barra_llena = "█" * actual
+        barra_vacia = "░" * (maximo - actual)
+        barra = f"[{color}]{barra_llena}[/][dim]{barra_vacia}[/dim]"
+        
+        console.print(f"[bold]GRADO DE MULTIPROGRAMACIÓN:[/bold] [{color}]{actual}[/]/{maximo} {barra}\n")
+    
+    @staticmethod
     def mostrar_evento(mensaje: str):
         """
         Muestra un mensaje de evento con formato.
