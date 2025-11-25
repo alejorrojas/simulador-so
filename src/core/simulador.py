@@ -64,6 +64,11 @@ class Simulador:
         """Obtiene procesos terminados."""
         return self._obtener_procesos_por_estado(EstadoProceso.TERMINADO)
     
+    def _calcular_grado_multiprogramacion_actual(self) -> int:
+        procesos_en_memoria = self.gestor_memoria.contar_procesos_en_memoria()
+        procesos_suspendidos = len(self.planificador.obtener_cola_suspendidos())
+        return procesos_en_memoria + procesos_suspendidos
+    
     def mostrar_estado(self, mensaje_evento: str = None):
         """
         Muestra el estado actual del sistema.
@@ -78,7 +83,8 @@ class Simulador:
             self.formateador.mostrar_instante(self.tiempo_actual)
         
         # Mostrar grado de multiprogramación actual
-        grado_actual = self.gestor_memoria.contar_procesos_en_memoria()
+        # Incluye procesos en memoria y procesos en cola de listo y suspendido
+        grado_actual = self._calcular_grado_multiprogramacion_actual()
         grado_maximo = self.gestor_memoria.grado_multiprogramacion
         self.formateador.mostrar_grado_multiprogramacion(grado_actual, grado_maximo)
         
@@ -129,17 +135,13 @@ class Simulador:
         
         # Procesar cola de nuevos primero (tienen prioridad según arribo)
         while self.cola_nuevos:
-            # Verificar grado de multiprogramación
-            if self.gestor_memoria.contar_procesos_en_memoria() >= self.gestor_memoria.grado_multiprogramacion:
-                # No hay espacio por grado de multiprogramación
-                # Mover restantes a suspendidos
-                for proceso in self.cola_nuevos:
-                    self.planificador.agregar_suspendido(proceso, self.tiempo_actual)
-                    suspendidos_nuevos.append(proceso)
-                self.cola_nuevos.clear()
-                break
-            
             proceso = self.cola_nuevos[0]
+            
+            # Verificar grado de multiprogramación (incluye procesos en memoria y suspendidos)
+            if self._calcular_grado_multiprogramacion_actual() >= self.gestor_memoria.grado_multiprogramacion:
+                # No hay espacio por grado de multiprogramación
+                # Dejar los procesos restantes en cola de nuevos (no mover a suspendidos)
+                break
             
             # Intentar asignar memoria (Best-Fit)
             if self.gestor_memoria.asignar_proceso(proceso):
@@ -148,6 +150,7 @@ class Simulador:
                 asignados.append(proceso)
             else:
                 # No hay partición adecuada, mover a suspendidos
+                # (ya verificamos el límite arriba, así que podemos agregarlo)
                 self.cola_nuevos.pop(0)
                 self.planificador.agregar_suspendido(proceso, self.tiempo_actual)
                 suspendidos_nuevos.append(proceso)
@@ -164,8 +167,8 @@ class Simulador:
         promovidos = []
         
         while self.planificador.cola_listos_suspendidos:
-            # Verificar grado de multiprogramación
-            if self.gestor_memoria.contar_procesos_en_memoria() >= self.gestor_memoria.grado_multiprogramacion:
+            # Verificar grado de multiprogramación (incluye procesos en memoria y suspendidos)
+            if self._calcular_grado_multiprogramacion_actual() >= self.gestor_memoria.grado_multiprogramacion:
                 break
             
             # Verificar si hay espacio en memoria para el primer suspendido
