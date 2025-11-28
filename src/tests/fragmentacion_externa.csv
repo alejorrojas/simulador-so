@@ -1,6 +1,6 @@
-id_proceso,tamaño,tiempo_arribo,tiempo_irrupcion
-P1,200,0,10
-P2,140,0,8
-P3,40,0,5
-P4,45,0,6
-P5,180,3,7
+proceso_id,t_arribo_al_sistema,memoria_K,tiempo_irrupcion
+P1,0,200,10
+P2,0,140,8
+P3,0,40,5
+P4,0,45,6
+P5,3,180,7

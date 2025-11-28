@@ -20,7 +20,7 @@ class LectorCSV:
                 lector = csv.DictReader(archivo)
                 
                 # Verificar que las columnas requeridas existan
-                columnas_requeridas = {'id_proceso', 'tamaño', 'tiempo_arribo', 'tiempo_irrupcion'}
+                columnas_requeridas = {'proceso_id', 't_arribo_al_sistema', 'memoria_K', 'tiempo_irrupcion'}
                 if not columnas_requeridas.issubset(set(lector.fieldnames or [])):
                     raise ValueError(
                         f"El archivo CSV debe tener las columnas: {', '.join(columnas_requeridas)}"
@@ -55,25 +55,25 @@ class LectorCSV:
     
     @staticmethod
     def _crear_proceso_desde_fila(fila: dict) -> Proceso:
-        id_proceso = fila['id_proceso'].strip()
+        id_proceso = fila['proceso_id'].strip()
         
         if not id_proceso:
-            raise ValueError("El id_proceso no puede estar vacío")
+            raise ValueError("El proceso_id no puede estar vacío")
         
         try:
-            tamaño = int(fila['tamaño'].strip())
-            tiempo_arribo = int(fila['tiempo_arribo'].strip())
+            tamaño = int(fila['memoria_K'].strip())
+            tiempo_arribo = int(fila['t_arribo_al_sistema'].strip())
             tiempo_irrupcion = int(fila['tiempo_irrupcion'].strip())
         except ValueError:
             raise ValueError(
-                "tamaño, tiempo_arribo y tiempo_irrupcion deben ser números enteros"
+                "memoria_K, t_arribo_al_sistema y tiempo_irrupcion deben ser números enteros"
             )
         
         if tamaño <= 0:
-            raise ValueError(f"El tamaño debe ser positivo (proceso {id_proceso})")
+            raise ValueError(f"La memoria_K debe ser positiva (proceso {id_proceso})")
         
         if tiempo_arribo < 0:
-            raise ValueError(f"El tiempo de arribo no puede ser negativo (proceso {id_proceso})")
+            raise ValueError(f"El tiempo de arribo al sistema no puede ser negativo (proceso {id_proceso})")
         
         if tiempo_irrupcion <= 0:
             raise ValueError(f"El tiempo de irrupción debe ser positivo (proceso {id_proceso})")
