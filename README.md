@@ -76,12 +76,12 @@ Al ejecutar el programa, busca automáticamente un archivo `procesos.csv` en el 
   ./procesos.csv
   ```
 
-## Instalación
+## Correr el proyecto local
 
 ### Requisitos
 
 - Python 3.13+
-- [uv](https://docs.astral.sh/uv/) (recomendado)
+- [uv](https://docs.astral.sh/uv/) 
 
 ### Con uv
 
@@ -95,12 +95,12 @@ uv sync
 uv run python src/main.py
 ```
 
-El programa mostrará un menú interactivo donde podrás:
+El programa iniciará un menú interactivo con las siguientes opciones:
 
-1. Cargar un archivo CSV con procesos
-2. Ver los procesos cargados
-3. Iniciar la simulación
-4. Salir
+1. **Cargar archivo de procesos (CSV)**: Permite cargar un archivo CSV con los procesos a simular. Si existe un archivo `procesos.csv` en el directorio actual, se puede usar presionando Enter.
+2. **Ver procesos cargados**: Muestra una tabla con todos los procesos cargados y sus características.
+3. **Iniciar simulación**: Ejecuta la simulación con los procesos cargados.
+4. **Salir**: Finaliza el programa.
 
 ## Formato del archivo CSV
 
@@ -155,8 +155,9 @@ so-kernel/
 │   ├── utils/           # Utilidades y helpers
 │   │   ├── __init__.py
 │   │   ├── lector_csv.py        # Lectura de archivos CSV
-│   │   └── formato_salida.py    # Formateo de salida con Rich
-│   ├── main.py          # Punto de entrada y menú principal
+│   │   ├── formato_salida.py    # Formateo de salida
+│   │   └── menu_principal.py    # Menú interactivo de usuario
+│   ├── main.py          # Punto de entrada principal
 │   └── tests/           # Archivos de prueba
 │       └── procesos.csv  # Archivo de ejemplo
 ├── pyproject.toml       # Configuración del proyecto
@@ -167,5 +168,6 @@ so-kernel/
 
 - **`src/entities/`**: Contiene las clases que representan las entidades del dominio del sistema (Proceso, Partición)
 - **`src/core/`**: Contiene la lógica de negocio principal (gestión de memoria, planificación, simulación)
-- **`src/utils/`**: Contiene utilidades y funciones auxiliares (lectura de archivos, formateo de salida)
+- **`src/utils/`**: Contiene utilidades y funciones auxiliares (lectura de archivos, formateo de salida, menú interactivo)
+- **`src/main.py`**: Punto de entrada que inicializa y ejecuta el menú principal
 
