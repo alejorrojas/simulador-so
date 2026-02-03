@@ -100,6 +100,9 @@ class MenuPrincipal:
                 console.input("\n  [dim]Presione Enter para continuar...[/dim]")
                 return
         
+        # Remover comillas si las hay (aceptar con y sin comillas)
+        ruta = ruta.strip('"\'')
+        
         # Expandir rutas con ~ (directorio home del usuario)
         ruta = os.path.expanduser(ruta)
         
