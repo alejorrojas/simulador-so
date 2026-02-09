@@ -43,7 +43,7 @@ jobs:
       
       - name: Build executable
         run: |
-          pyinstaller --onefile --name simulador-memoria-${{ matrix.name }} --paths src src/main.py
+          pyinstaller --onefile --name simulador-memoria-${{ matrix.name }} --paths src --hidden-import=rich._unicode_data --hidden-import=rich._unicode_data.unicode17-0-0 --collect-data rich src/main.py
       
       - name: Upload artifact
         uses: actions/upload-artifact@v4

@@ -1,0 +1,207 @@
+================================================================================
+INSTRUCCIONES DE EJECUCIÓN - SIMULADOR DE ASIGNACIÓN DE MEMORIA
+================================================================================
+
+Este documento contiene las instrucciones para ejecutar el simulador en
+Windows y Linux usando los ejecutables precompilados incluidos en el zip.
+
+IMPORTANTE: El simulador requiere un archivo CSV con un formato específico.
+Asegúrese de tener un archivo CSV válido antes de ejecutar el programa.
+
+================================================================================
+FORMATO DEL ARCHIVO CSV REQUERIDO
+================================================================================
+
+El archivo CSV debe tener EXACTAMENTE las siguientes columnas (en este orden):
+
+  proceso_id, t_arribo_al_sistema, memoria_K, tiempo_irrupcion
+
+Ejemplo de contenido válido:
+
+  proceso_id,t_arribo_al_sistema,memoria_K,tiempo_irrupcion
+  P1,0,200,5
+  P2,1,50,3
+  P3,2,180,8
+
+Descripción de las columnas:
+  - proceso_id: Identificador único del proceso (texto, ej: P1, A1, Proceso1)
+  - t_arribo_al_sistema: Instante en que el proceso llega al sistema (número entero >= 0)
+  - memoria_K: Tamaño del proceso en KB (número entero > 0)
+  - tiempo_irrupcion: Tiempo de CPU que necesita el proceso (número entero > 0)
+
+Restricciones:
+  - Máximo 10 procesos por archivo
+  - Los valores numéricos deben ser enteros
+  - memoria_K y tiempo_irrupcion deben ser positivos
+  - t_arribo_al_sistema no puede ser negativo
+
+NOTA: Puede encontrar archivos CSV de ejemplo en la carpeta:
+      ejecutables/ejemplos
+      
+      Archivos de ejemplo disponibles:
+      - catedra_lote_1.csv
+      - catedra_lote_2.csv
+      - catedra_lote_3.csv
+
+================================================================================
+EJECUCIÓN EN WINDOWS
+================================================================================
+
+PASO 1: Extraer el archivo ZIP
+  - Descomprima el archivo "grupo-round-robin-tpi.zip"
+  - Se creará la carpeta "grupo-round-robin-tpi"
+
+PASO 2: Abrir la carpeta de ejecutables
+  - Navegue a: grupo-round-robin-tpi\ejecutables\
+  - Encontrará el archivo: simulador-memoria-windows.exe
+
+PASO 3: Preparar el archivo CSV
+  - Los archivos CSV de ejemplo se encuentran en: grupo-round-robin-tpi\ejecutables\ejemplos\
+  - Puede usar directamente uno de los archivos de ejemplo desde esa carpeta
+
+PASO 4: Ejecutar el simulador
+  - Haga doble clic en "simulador-memoria-windows.exe"
+  - O abra una terminal (PowerShell o CMD) en la carpeta ejecutables y ejecute:
+    
+    .\simulador-memoria-windows.exe
+
+PASO 5: Usar el menú interactivo
+  - El programa mostrará un menú con 4 opciones:
+    1. Cargar archivo de procesos (CSV)
+    2. Ver procesos cargados
+    3. Iniciar simulación
+    4. Salir
+
+  - Si colocó un archivo llamado "procesos.csv" en la misma carpeta que el
+    ejecutable, puede presionar Enter cuando se le solicite la ruta del archivo
+    para usar ese archivo automáticamente.
+
+  - Si el archivo está en otra ubicación, ingrese la ruta completa, por ejemplo:
+    C:\Users\Profesor\Desktop\procesos.csv
+    o una ruta relativa desde donde ejecutó el programa, por ejemplo:
+    .\ejemplos\catedra_lote_1.csv
+
+PASO 6: Iniciar la simulación
+  - Seleccione la opción 1 para cargar el archivo CSV
+  - Verifique los procesos cargados con la opción 2
+  - Seleccione la opción 3 para iniciar la simulación
+  - Siga las instrucciones en pantalla para avanzar paso a paso
+
+NOTA: Si aparece un error al cargar el CSV, verifique que:
+  - El archivo tenga las columnas exactas mencionadas arriba
+  - No haya espacios extra en los nombres de las columnas
+  - Los valores numéricos sean enteros válidos
+  - El archivo no tenga más de 10 procesos
+
+================================================================================
+EJECUCIÓN EN LINUX
+================================================================================
+
+PASO 1: Extraer el archivo ZIP
+  - Descomprima el archivo "grupo-round-robin-tpi.zip"
+  - Se creará la carpeta "grupo-round-robin-tpi"
+
+PASO 2: Abrir la carpeta de ejecutables
+  - Navegue a: grupo-round-robin-tpi/ejecutables/
+  - Encontrará el archivo: simulador-memoria-linux-x86_64
+
+PASO 3: Dar permisos de ejecución
+  - Abra una terminal en la carpeta ejecutables
+  - Ejecute el siguiente comando para dar permisos de ejecución:
+    
+    chmod +x simulador-memoria-linux-x86_64
+
+PASO 4: Preparar el archivo CSV
+  - Los archivos CSV de ejemplo se encuentran en: grupo-round-robin-tpi/ejecutables/ejemplos/
+  - Puede usar directamente uno de los archivos de ejemplo desde esa carpeta
+
+PASO 5: Ejecutar el simulador
+  - Desde la terminal en la carpeta ejecutables, ejecute:
+    
+    ./simulador-memoria-linux-x86_64
+
+PASO 6: Usar el menú interactivo
+  - El programa mostrará un menú con 4 opciones:
+    1. Cargar archivo de procesos (CSV)
+    2. Ver procesos cargados
+    3. Iniciar simulación
+    4. Salir
+
+  - Si colocó un archivo llamado "procesos.csv" en la misma carpeta que el
+    ejecutable, puede presionar Enter cuando se le solicite la ruta del archivo
+    para usar ese archivo automáticamente.
+
+  - Si el archivo está en otra ubicación, ingrese la ruta completa, por ejemplo:
+    /home/usuario/Desktop/procesos.csv
+    o una ruta relativa desde donde ejecutó el programa, por ejemplo:
+    ejemplos/catedra_lote_1.csv
+
+PASO 7: Iniciar la simulación
+  - Seleccione la opción 1 para cargar el archivo CSV
+  - Verifique los procesos cargados con la opción 2
+  - Seleccione la opción 3 para iniciar la simulación
+  - Siga las instrucciones en pantalla para avanzar paso a paso
+
+NOTA: Si aparece un error al cargar el CSV, verifique que:
+  - El archivo tenga las columnas exactas mencionadas arriba
+  - No haya espacios extra en los nombres de las columnas
+  - Los valores numéricos sean enteros válidos
+  - El archivo no tenga más de 10 procesos
+
+================================================================================
+SOLUCIÓN DE PROBLEMAS COMUNES
+================================================================================
+
+ERROR: "El archivo CSV debe tener las columnas: proceso_id, t_arribo_al_sistema, memoria_K, tiempo_irrupcion"
+  SOLUCIÓN: Verifique que la primera línea del CSV tenga exactamente esos
+            nombres de columna, sin espacios adicionales y en ese orden.
+
+ERROR: "No se encontró el archivo: [ruta]"
+  SOLUCIÓN: Verifique que la ruta sea correcta. En Windows, use barras
+            invertidas (\) o barras normales (/). En Linux, use barras
+            normales (/). Puede usar rutas relativas o absolutas.
+            NOTA: Ahora puede usar rutas con o sin comillas. Ambas funcionan:
+                  C:\Users\Mi Usuario\procesos.csv
+                  "C:\Users\Mi Usuario\procesos.csv"
+
+El ejecutable no se ejecuta en Linux
+  SOLUCIÓN: Asegúrese de haber dado permisos de ejecución con:
+            chmod +x simulador-memoria-linux-x86_64
+
+ERROR en Windows: "No module named 'rich._unicode_data.unicode17-0-0'"
+  SOLUCIÓN: Este error ha sido corregido. Descargue la última versión del
+            ejecutable o ejecute desde el código fuente con:
+            pip install rich
+            python src/main.py
+
+ERROR en macOS: "Apple no puede verificar que el archivo esté libre de malware"
+  SOLUCIÓN: El ejecutable no está firmado digitalmente. Para permitir su
+            ejecución:
+            1. Intente abrir el ejecutable (se mostrará el error)
+            2. Vaya a: Configuración del Sistema → Privacidad y Seguridad
+            3. En la sección "Seguridad", haga clic en "Abrir de todas formas"
+            O ejecute en Terminal:
+            xattr -d com.apple.quarantine simulador-memoria-macos-arm
+            chmod +x simulador-memoria-macos-arm
+            
+            Para más detalles, consulte el archivo TROUBLESHOOTING.md
+
+================================================================================
+INFORMACIÓN ADICIONAL
+================================================================================
+
+Configuración del simulador:
+  - Asignación de memoria: Particiones fijas con algoritmo Best-Fit
+  - Planificación de CPU: SRTF (Shortest Remaining Time First)
+  - Grado de multiprogramación: 5 procesos simultáneos en memoria
+  - Particiones de memoria: SO(100KB), 250KB, 150KB, 50KB
+  - Máximo de procesos: 10
+
+Durante la simulación se mostrará:
+  - Estado actual de todos los procesos
+  - Tabla de particiones de memoria con fragmentación interna
+  - Proceso en ejecución y colas de listos/suspendidos
+  - Tiempo de retorno y espera de cada proceso al finalizar
+  - Promedios de tiempos y rendimiento del sistema
+
+================================================================================
