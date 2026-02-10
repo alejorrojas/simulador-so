@@ -1,9 +1,0 @@
-proceso_id,t_arribo_al_sistema,memoria_K,tiempo_irrupcion
-P1,0,200,5
-P2,0,50,3
-P3,0,100,4
-P4,0,140,6
-P5,0,40,2
-P6,1,180,8
-P7,1,45,5
-P8,2,120,7

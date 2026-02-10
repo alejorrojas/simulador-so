@@ -1,0 +1,4 @@
+proceso_id,t_arribo_al_sistema,memoria_K,tiempo_irrupcion
+A1,0,50,12
+A2,1,120,9
+A3,2,500,8

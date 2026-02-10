@@ -3,8 +3,8 @@ Módulo que define el Gestor de Memoria con particiones fijas y algoritmo Best-F
 """
 
 from typing import List, Optional
-from entities.particion import Particion
-from entities.proceso import Proceso
+from classes.particion import Particion
+from classes.proceso import Proceso
 
 
 class GestorMemoria:

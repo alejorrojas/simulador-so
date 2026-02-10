@@ -4,7 +4,7 @@ Módulo principal del simulador de memoria y planificación de procesos. Coordin
 
 from typing import List, Optional, Tuple
 from rich.console import Console
-from entities.proceso import Proceso, EstadoProceso
+from classes.proceso import Proceso, EstadoProceso
 from core.gestor_memoria import GestorMemoria
 from core.planificador import Planificador
 from utils.formato_salida import FormateadorSalida

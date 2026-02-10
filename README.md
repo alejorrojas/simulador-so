@@ -120,6 +120,8 @@ P3,180,2,8
 | `tiempo_arribo` | Instante en que llega al sistema |
 | `tiempo_irrupcion` | Tiempo de CPU que necesita |
 
+**⚠️ Validación de tamaño**: Los procesos que excedan el tamaño de la partición más grande (250 KB) serán detectados automáticamente antes de iniciar la simulación, se mostrará una advertencia y serán ignorados. La simulación continuará solo con los procesos válidos.
+
 Se incluye un archivo de ejemplo `procesos.csv` en la carpeta `./src/tests`.
 
 ## Salida del simulador
@@ -143,7 +145,7 @@ El proyecto está organizado en módulos separados por responsabilidad:
 ```
 so-kernel/
 ├── src/                 # Código fuente del proyecto
-│   ├── entities/        # Clases de dominio/entidades
+│   ├── classes/        # Clases de dominio
 │   │   ├── __init__.py
 │   │   ├── proceso.py       # Clase Proceso y estados
 │   │   └── particion.py     # Clase Partición de memoria
@@ -166,7 +168,7 @@ so-kernel/
 
 ### Organización por módulos
 
-- **`src/entities/`**: Contiene las clases que representan las entidades del dominio del sistema (Proceso, Partición)
+- **`src/classes/`**: Contiene las clases que representan las clases del dominio del sistema (Proceso, Partición)
 - **`src/core/`**: Contiene la lógica de negocio principal (gestión de memoria, planificación, simulación)
 - **`src/utils/`**: Contiene utilidades y funciones auxiliares (lectura de archivos, formateo de salida, menú interactivo)
 - **`src/main.py`**: Punto de entrada que inicializa y ejecuta el menú principal

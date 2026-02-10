@@ -3,7 +3,7 @@ Módulo que define el Planificador de CPU con algoritmo SRTF.
 """
 
 from typing import List, Optional
-from entities.proceso import Proceso, EstadoProceso
+from classes.proceso import Proceso, EstadoProceso
 
 
 class Planificador:

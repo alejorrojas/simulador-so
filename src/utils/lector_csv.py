@@ -4,7 +4,7 @@ Módulo para leer procesos desde archivos CSV.
 
 import csv
 from typing import List
-from entities.proceso import Proceso
+from classes.proceso import Proceso
 
 class LectorCSV:
     

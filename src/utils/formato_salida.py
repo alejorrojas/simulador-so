@@ -8,8 +8,8 @@ from rich.table import Table
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
-from entities.proceso import Proceso, EstadoProceso
-from entities.particion import Particion
+from classes.proceso import Proceso, EstadoProceso
+from classes.particion import Particion
 
 # Consola global para todo el módulo
 console = Console()
