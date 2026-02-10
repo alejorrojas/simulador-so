@@ -14,7 +14,7 @@ FORMATO DEL ARCHIVO CSV REQUERIDO
 
 El archivo CSV debe tener EXACTAMENTE las siguientes columnas (en este orden):
 
-  proceso_id, t_arribo_al_sistema, memoria_K, tiempo_irrupcion
+  proceso_id,t_arribo_al_sistema,memoria_K,tiempo_irrupcion
 
 Ejemplo de contenido válido:
 
@@ -88,7 +88,7 @@ PASO 6: Iniciar la simulación
   - Siga las instrucciones en pantalla para avanzar paso a paso
 
 NOTA: Si aparece un error al cargar el CSV, verifique que:
-  - El archivo tenga las columnas exactas mencionadas arriba
+  - El archivo tenga las columnas exactas mencionadas anteriormente
   - No haya espacios extra en los nombres de las columnas
   - Los valores numéricos sean enteros válidos
   - El archivo no tenga más de 10 procesos
@@ -143,7 +143,7 @@ PASO 7: Iniciar la simulación
   - Siga las instrucciones en pantalla para avanzar paso a paso
 
 NOTA: Si aparece un error al cargar el CSV, verifique que:
-  - El archivo tenga las columnas exactas mencionadas arriba
+  - El archivo tenga las columnas exactas mencionadas anteriormente
   - No haya espacios extra en los nombres de las columnas
   - Los valores numéricos sean enteros válidos
   - El archivo no tenga más de 10 procesos
@@ -160,48 +160,101 @@ ERROR: "No se encontró el archivo: [ruta]"
   SOLUCIÓN: Verifique que la ruta sea correcta. En Windows, use barras
             invertidas (\) o barras normales (/). En Linux, use barras
             normales (/). Puede usar rutas relativas o absolutas.
-            NOTA: Ahora puede usar rutas con o sin comillas. Ambas funcionan:
-                  C:\Users\Mi Usuario\procesos.csv
-                  "C:\Users\Mi Usuario\procesos.csv"
 
 El ejecutable no se ejecuta en Linux
   SOLUCIÓN: Asegúrese de haber dado permisos de ejecución con:
             chmod +x simulador-memoria-linux-x86_64
 
-ERROR en Windows: "No module named 'rich._unicode_data.unicode17-0-0'"
-  SOLUCIÓN: Este error ha sido corregido. Descargue la última versión del
-            ejecutable o ejecute desde el código fuente con:
-            pip install rich
-            python src/main.py
-
-ERROR en macOS: "Apple no puede verificar que el archivo esté libre de malware"
-  SOLUCIÓN: El ejecutable no está firmado digitalmente. Para permitir su
-            ejecución:
-            1. Intente abrir el ejecutable (se mostrará el error)
-            2. Vaya a: Configuración del Sistema → Privacidad y Seguridad
-            3. En la sección "Seguridad", haga clic en "Abrir de todas formas"
-            O ejecute en Terminal:
-            xattr -d com.apple.quarantine simulador-memoria-macos-arm
-            chmod +x simulador-memoria-macos-arm
-            
-            Para más detalles, consulte el archivo TROUBLESHOOTING.md
-
 ================================================================================
 INFORMACIÓN ADICIONAL
 ================================================================================
 
-Configuración del simulador:
-  - Asignación de memoria: Particiones fijas con algoritmo Best-Fit
-  - Planificación de CPU: SRTF (Shortest Remaining Time First)
-  - Grado de multiprogramación: 5 procesos simultáneos en memoria
-  - Particiones de memoria: SO(100KB), 250KB, 150KB, 50KB
-  - Máximo de procesos: 10
+FLUJO DE PROCESAMIENTO DE FINALIZACIONES
 
-Durante la simulación se mostrará:
-  - Estado actual de todos los procesos
-  - Tabla de particiones de memoria con fragmentación interna
-  - Proceso en ejecución y colas de listos/suspendidos
-  - Tiempo de retorno y espera de cada proceso al finalizar
-  - Promedios de tiempos y rendimiento del sistema
+IMPORTANTE - Comportamiento en el mismo instante de tiempo:
+
+Cuando un proceso termina (tiempo_restante == 0), en el mismo instante de tiempo se realizan tres acciones secuenciales:
+
+1. Liberar memoria: El proceso pasa a estado "Terminado", se libera su partición 
+   de memoria y se registra su tiempo_finalizacion = tiempo_actual.
+
+2. Cargar el siguiente proceso: 
+   - Primero se intentan promover procesos suspendidos a listos (si hay espacio 
+     y memoria disponible usando Best-Fit).
+   - Después se intentan asignar procesos nuevos a memoria (si hay espacio, 
+     también usando Best-Fit).
+
+3. Re-evaluar SRTF inmediatamente: Una vez que se han cargado nuevos procesos a 
+   memoria (promovidos o asignados), se vuelve a evaluar SRTF inmediatamente 
+   considerando al nuevo integrante. Esto significa:
+   - Se ordena la cola de listos por tiempo restante (ascendente).
+   - Se selecciona el proceso con menor tiempo restante para ejecutar.
+   - Si el proceso que estaba ejecutando tiene más tiempo restante que algún 
+     proceso en la cola de listos, se produce preemption.
+
+Ejemplo:
+  - En tiempo T=10, proceso P1 termina (tiempo_restante = 0).
+  - Mismo instante T=10:
+    1. Se libera memoria de P1 → Partición queda libre.
+    2. Se promueve P2 (suspendido) a memoria → P2 entra a cola de listos.
+    3. Se re-evalúa SRTF → Si P2 tiene menos tiempo restante que el proceso 
+       actual, P2 ejecuta inmediatamente (preemption).
+
+ORDEN DE PROCESAMIENTO DE COLAS
+
+Cola de Nuevos (al asignar memoria):
+  - Se ordenan por: (t_arribo_al_sistema, tiempo_irrupcion) ascendente
+  - Procesos que llegaron antes tienen prioridad (FIFO por arribo)
+  - Si varios procesos llegaron al mismo tiempo, se prioriza el de menor 
+    tiempo de irrupción
+
+Cola de Suspendidos (al promover):
+  - Se procesan en orden FIFO (primero en llegar, primero en promover)
+  - Pero si el primero no cabe, se intenta con los siguientes (puede haber 
+    uno más pequeño que sí quepa)
+
+Cola de Listos:
+  - Siempre ordenada por tiempo_restante ascendente (SRTF)
+
+CÁLCULO DE TIEMPOS
+
+Tiempo de Finalización:
+  - Es el instante en que el proceso pasa a estado "Terminado"
+  - Se registra cuando tiempo_restante == 0
+
+Tiempo de Retorno (Turnaround Time):
+  
+  Tiempo de Retorno = Tiempo de Finalización - Tiempo de Arribo
+
+Tiempo de Espera:
+  
+  Tiempo de Espera = Tiempo de Retorno - Tiempo de Irrupción
+
+NOTA: El tiempo de espera incluye:
+  - Tiempo esperando en cola de listos (antes de ejecutar)
+  - Tiempo esperando en cola de suspendidos (sin memoria)
+  - Tiempo esperando en cola de nuevos (si grado de multiprogramación está lleno)
+  - Tiempo de preemption (si fue preemptado y volvió a esperar)
+
+SALIDA ESPERADA
+
+Al finalizar la simulación, debes generar una tabla con el siguiente formato:
+
+  Tiempos por Proceso
+  ┌──────────┬──────────────────┬───────────────┬──────────────┐
+  │ Proceso  │ T. Finalización  │ T. Retorno    │ T. Espera    │
+  ├──────────┼──────────────────┼───────────────┼──────────────┤
+  │ A1       │ 12               │ 12            │ 0            │
+  │ A2       │ 21               │ 20            │ 11           │
+  │ A3       │ 29               │ 27            │ 19           │
+  │ ...      │ ...              │ ...           │ ...          │
+  └──────────┴──────────────────┴───────────────┴──────────────┘
+
+VALIDACIONES IMPORTANTES
+
+  - Un proceso solo puede estar en UNA cola a la vez
+  - Un proceso solo puede tener UNA partición asignada
+  - El grado de multiprogramación nunca debe exceder 5
+  - Un proceso no puede ejecutarse si no está en memoria
 
 ================================================================================
