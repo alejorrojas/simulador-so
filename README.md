@@ -59,14 +59,6 @@ simulador-memoria-windows.exe
 
 **Nota:** En Linux y macOS, asegúrate de que el ejecutable tenga permisos de ejecución.
 
-### ⚠️ Problemas al ejecutar
-
-Si encuentras errores al ejecutar los ejecutables:
-
-- **Windows**: Error `No module named 'rich._unicode_data.unicode17-0-0'`
-- **macOS**: Alerta de seguridad que bloquea la ejecución
-
-Consulta el archivo **[TROUBLESHOOTING.md](TROUBLESHOOTING.md)** para soluciones detalladas.
 
 ### Cargar archivo de procesos en los ejecutables
 
