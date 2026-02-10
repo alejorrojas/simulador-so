@@ -256,5 +256,9 @@ VALIDACIONES IMPORTANTES
   - Un proceso solo puede tener UNA partición asignada
   - El grado de multiprogramación nunca debe exceder 5
   - Un proceso no puede ejecutarse si no está en memoria
+  - Los procesos que excedan el tamaño de la partición más grande (250KB)
+    serán detectados antes de iniciar la simulación, se mostrará una 
+    advertencia y serán ignorados. La simulación continuará solo con 
+    los procesos válidos.
 
 ================================================================================
