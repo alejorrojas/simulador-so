@@ -396,3 +396,38 @@ class FormateadorSalida:
             return f"SE PROMOVIÓ: {ids}"
         else:
             return f"SE PROMOVIERON: {ids}"
+    
+    @staticmethod
+    def mostrar_procesos_invalidos(procesos_invalidos: List[Proceso], tamaño_max: int):
+        """
+        Muestra advertencia sobre procesos que exceden el tamaño máximo de partición.
+        
+        Args:
+            procesos_invalidos: Lista de procesos que no pueden ser procesados
+            tamaño_max: Tamaño máximo de partición disponible
+        """
+        console.print()
+        console.print("[bold red]ADVERTENCIA - PROCESOS INVÁLIDOS:[/bold red]")
+        console.print(f"La partición más grande del sistema es de [bold yellow]{tamaño_max}KB[/bold yellow].")
+        console.print("Los siguientes procesos serán [bold red]IGNORADOS[/bold red] porque exceden este tamaño:\n")
+        
+        table = Table(
+            box=box.ROUNDED,
+            show_header=True,
+            header_style="bold red"
+        )
+        
+        table.add_column("Proceso", justify="center", style="white")
+        table.add_column("Tamaño", justify="right", style="yellow")
+        table.add_column("Motivo", justify="left", style="red")
+        
+        for proceso in procesos_invalidos:
+            table.add_row(
+                proceso.id_proceso,
+                f"{proceso.tamaño} KB",
+                f"Excede tamaño máximo ({tamaño_max}KB)"
+            )
+        
+        console.print(table)
+        console.print(f"\n[dim]Se ignoraron {len(procesos_invalidos)} proceso(s)[/dim]")
+        console.print()

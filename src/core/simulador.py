@@ -271,6 +271,28 @@ class Simulador:
         """
         self._simulacion_iniciada = False
         
+        # Validar que los procesos no excedan el tamaño máximo de partición
+        tamaño_max_particion = max(
+            p.tamaño for p in self.gestor_memoria.obtener_particiones()
+            if not p.es_sistema_operativo
+        )
+        
+        # Filtrar procesos inválidos (que exceden el tamaño máximo)
+        procesos_invalidos = [p for p in self.procesos if p.tamaño > tamaño_max_particion]
+        
+        if procesos_invalidos:
+            # Mostrar advertencia sobre procesos inválidos
+            self.formateador.mostrar_procesos_invalidos(procesos_invalidos, tamaño_max_particion)
+            self.formateador.esperar_entrada()
+            
+            # Remover procesos inválidos de la lista
+            self.procesos = [p for p in self.procesos if p.tamaño <= tamaño_max_particion]
+            
+            # Si no quedan procesos válidos, terminar la simulación
+            if not self.procesos:
+                console.print("\n[bold red]No hay procesos válidos para simular.[/bold red]\n")
+                return
+        
         # Mostrar estado inicial
         self.formateador.mostrar_titulo("ESTADO INICIAL DE LA MEMORIA")
         self.mostrar_estado()
